@@ -1,11 +1,13 @@
-import Image from "next/image"
+import Image from "next/image";
 
-interface AuctionItemProps {
+export interface AuctionItemProps {
   item: {
-    name: string
-    description: string
-    imageUrl: string
-  }
+    id: number;
+    name: string;
+    description: string;
+    imageUrl: string;
+    currentBid: number;
+  };
 }
 
 export default function AuctionItem({ item }: AuctionItemProps) {
@@ -23,6 +25,5 @@ export default function AuctionItem({ item }: AuctionItemProps) {
         <p className="text-gray-600">{item.description}</p>
       </div>
     </div>
-  )
+  );
 }
-

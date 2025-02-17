@@ -22,52 +22,35 @@ export default function LoginForm() {
     try {
       await login(username, password);
       router.push("/");
-    } catch (err) {
-      setError("Invalid email or password");
+    } catch (err: any) {
+      setError(err.message || "An error occurred during login");
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-    >
-      <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="email"
-        >
-          Username
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
         <Input
-          id="username"
           type="text"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
-          className="w-full"
         />
       </div>
-      <div className="mb-6">
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="password"
-        >
-          Password
-        </label>
+      <div>
         <Input
-          id="password"
           type="password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full"
         />
       </div>
-      {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
-      <div className="flex items-center justify-between">
-        <Button type="submit">Sign In</Button>
-      </div>
+      {error && <p className="text-red-500">{error}</p>}
+      <Button type="submit" className="w-full">
+        Log in
+      </Button>
     </form>
   );
 }

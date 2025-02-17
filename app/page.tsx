@@ -1,12 +1,13 @@
-import { redirect } from "next/navigation";
+"use client"; // Mark as a Client Component
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AuctionItem from "@/components/AuctionItem";
 import BiddingSection from "@/components/BiddingSection";
-import { cookies } from "next/headers";
 
 async function getAuctionItem() {
-  // In a real application, this would fetch data from an API or database
   return {
-    id: "1",
+    id: 1, // Ensure it's a number if your prop expects a number
     name: "Vintage Watch",
     description: "A beautiful vintage watch from the 1950s",
     imageUrl: "/placeholder.svg?height=300&width=300",
@@ -14,22 +15,37 @@ async function getAuctionItem() {
   };
 }
 
-export default async function Home() {
-  const cookieStore = cookies();
-  const userCookie = (await cookieStore).get("user");
+export default function Home() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [item, setItem] = useState<Awaited<
+    ReturnType<typeof getAuctionItem>
+  > | null>(null);
+  const router = useRouter();
 
-  if (!userCookie) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    const storedUser = localStorage.getItem("auction_user");
 
-  const item = await getAuctionItem();
+    if (!storedUser) {
+      router.push("/login");
+      return;
+    }
+    setUserId(storedUser);
+
+    // Fetch the auction item
+    getAuctionItem().then(setItem);
+  }, []);
+
+  if (!userId || !item) return <p>Loading...</p>; // Show a loading state while fetching
 
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Current Auction</h1>
       <div className="grid md:grid-cols-2 gap-8">
         <AuctionItem item={item} />
-        <BiddingSection itemId={item.id} initialBid={item.currentBid} />
+        <BiddingSection
+          itemId={item.id.toString()}
+          initialBid={item.currentBid}
+        />
       </div>
     </main>
   );
