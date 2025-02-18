@@ -5,11 +5,7 @@ import { createContext, useState, useEffect } from "react";
 import bcrypt from "bcryptjs";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
-
-interface Profile {
-  id: string;
-  balance: number;
-}
+import { Profile } from "@/interface";
 
 interface AuthContextType {
   user: Profile | null;
@@ -31,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkSession = async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        setUser({ id: data.user.id, balance: 1500 });
+        setUser({ id: data.user.id, balance: 1500, username: "" });
       }
     };
     checkSession();
