@@ -5,7 +5,8 @@ let bidHistory: { amount: number; timestamp: string; userEmail: string }[] = []
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  // const id = searchParams.get("id")
+  const id = searchParams.get("id")
+  console.log(id);
 
   // Return the bid history for the specified auction
   return NextResponse.json({ bidHistory })
