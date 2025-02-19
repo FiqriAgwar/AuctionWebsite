@@ -25,6 +25,7 @@
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.0",
     "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.0.4",
     "dotenv": "^16.4.7",
     "embla-carousel-react": "^8.5.2",
     "jsonwebtoken": "^9.0.2",
