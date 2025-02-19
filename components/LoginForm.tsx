@@ -22,6 +22,7 @@ export default function LoginForm() {
     try {
       await login(username, password);
       router.push("/");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "An error occurred during login");
     }

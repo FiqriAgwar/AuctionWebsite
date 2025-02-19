@@ -164,7 +164,7 @@ export default function AuctionItem({ item, userId }: AuctionItemProps) {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.rpc("place_bid", {
+      const { error } = await supabase.rpc("place_bid", {
         p_user_id: userId,
         p_item_id: item.id,
         p_bid_amount: bidAmount,
@@ -176,6 +176,7 @@ export default function AuctionItem({ item, userId }: AuctionItemProps) {
 
       setUserBid("");
       alert("Bid placed successfully!");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error placing bid:", error);
       alert(`Failed to place bid: ${error.message || "Unknown error"}`);

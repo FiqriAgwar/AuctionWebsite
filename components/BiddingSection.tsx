@@ -95,6 +95,7 @@ export default function BiddingSection({
             filter: `id=eq.${itemId}`,
           },
           (payload) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setCurrentItem(payload.new as any);
             setCurrentBid(payload.new.current_price);
           }
@@ -143,7 +144,7 @@ export default function BiddingSection({
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.rpc("place_bid", {
+      const {  error } = await supabase.rpc("place_bid", {
         p_user_id: user.id,
         p_item_id: itemId,
         p_bid_amount: bidAmount,
@@ -183,6 +184,7 @@ export default function BiddingSection({
           }))
         );
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error placing bid:", error);
       alert(`Failed to place bid: ${error.message || "Unknown error"}`);
