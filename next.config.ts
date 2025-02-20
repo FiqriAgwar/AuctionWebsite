@@ -21,6 +21,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.shopee.co.id",
+        port: "",
+        pathname: "/**"
+      }
     ],
   },
   eslint: {

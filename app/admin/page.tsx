@@ -6,26 +6,21 @@ import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import type { AuctionItemConfig } from "@/interface"
 import Header from "@/components/Header"
-import AuctionItem from "@/components/AuctionItem"
+import AdminAuctionItem from "@/components/AdminAuctionItem"
 
 const supabase = createClientComponentClient()
 
 async function getAuctionItems(): Promise<AuctionItemConfig[]> {
   const { data, error } = await supabase
     .from("auction_items")
-    .select(`
-      *,
-      owner:profiles!auction_items_owner_fkey(realname, id),
-      highest_bidder:profiles!auction_items_highest_bidder_fkey(realname, id)
-    `)
-    .order("order", { ascending: true, nullsFirst: false })
-    .order("id", { ascending: true })
+    .select("*, owner:profiles!auction_items_owner_fkey(realname, id), highest_bidder:profiles!auction_items_highest_bidder_fkey(realname, id)")
+    .order("order", { ascending: true })
 
   if (error) {
     console.error("Error fetching auction items:", error)
     return []
   }
-  
+
   return data.map((item) => ({
     id: item.id,
     name: item.name,
@@ -44,8 +39,9 @@ async function getAuctionItems(): Promise<AuctionItemConfig[]> {
   }))
 }
 
-export default function Home() {
-  const [auctionItems, setAuctionItems] = useState<AuctionItemConfig[]>([])
+export default function AdminPage() {
+  const [ongoingAuctions, setOngoingAuctions] = useState<AuctionItemConfig[]>([])
+  const [finishedAuctions, setFinishedAuctions] = useState<AuctionItemConfig[]>([])
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
 
@@ -57,14 +53,23 @@ export default function Home() {
       return
     }
 
-    setUser(JSON.parse(storedUser))
+    const parsedUser = JSON.parse(storedUser)
+    setUser(parsedUser)
+
+    if (!parsedUser.is_admin) {
+      router.push("/")
+      return
+    }
 
     // Fetch auction items
-    getAuctionItems().then(setAuctionItems)
+    getAuctionItems().then((items) => {
+      setOngoingAuctions(items.filter((item) => item.status !== "finished"))
+      setFinishedAuctions(items.filter((item) => item.status === "finished"))
+    })
 
     // Set up real-time subscription for auction item updates
     const channel = supabase
-      .channel("auction_item_updates")
+      .channel("admin_auction_updates")
       .on(
         "postgres_changes",
         {
@@ -73,7 +78,10 @@ export default function Home() {
           table: "auction_items",
         },
         () => {
-          getAuctionItems().then(setAuctionItems)
+          getAuctionItems().then((items) => {
+            setOngoingAuctions(items.filter((item) => item.status !== "finished"))
+            setFinishedAuctions(items.filter((item) => item.status === "finished"))
+          })
         },
       )
       .subscribe()
@@ -83,39 +91,24 @@ export default function Home() {
     }
   }, [router])
 
-  if (!user) return <p>Loading...</p>
-
-  const activeItems = auctionItems.filter((item) => item.status === "active")
-  const upcomingItems = auctionItems.filter((item) => item.status === "upcoming")
-  const finishedItems = auctionItems.filter((item) => item.status === "finished")
+  if (!user || !user.is_admin) return null
 
   return (
     <>
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Active Auctions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activeItems.map((item) => (
-              <AuctionItem key={item.id} item={item} userId={user.id} />
-            ))}
-          </div>
-        </section>
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Upcoming Auctions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upcomingItems.map((item) => (
-              <AuctionItem key={item.id} item={item} userId={user.id} />
-            ))}
-          </div>
+        <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Ongoing Auctions</h2>
+          {ongoingAuctions.map((item, index) => (
+            <AdminAuctionItem key={item.id} item={item} isFirst={index === 0} />
+          ))}
         </section>
         <section>
-          <h2 className="text-2xl font-bold mb-4">Finished Auctions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {finishedItems.map((item) => (
-              <AuctionItem key={item.id} item={item} userId={user.id} />
-            ))}
-          </div>
+          <h2 className="text-xl font-semibold mb-4">Finished Auctions</h2>
+          {finishedAuctions.map((item) => (
+            <AdminAuctionItem key={item.id} item={item} isFirst={false} />
+          ))}
         </section>
       </main>
     </>
